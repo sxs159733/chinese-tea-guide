@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一盏 · 中国茶事｜七大茶系、名茶图谱与冲泡指南</title>
+<meta name="description" content="从辨茶、冲泡到产地与茶文化：七大茶系、十三款名茶的香气、汤色、滋味、冲泡参数与辨伪要点，附发酵光谱、冲泡计时与茶缘测试。">
+<meta name="theme-color" content="#f6f1e6">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23a3402c'/%3E%3Ctext x='32' y='45' font-size='38' font-family='serif' text-anchor='middle' fill='%23fbf7ee'%3E茶%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="scroll-progress" aria-hidden="true"><span id="scrollBar"></span></div>
+
+<header class="site-head" id="siteHead">
+  <a class="brand" href="#top" aria-label="回到首页">
+    <span class="brand-seal">茶</span>
+    <span class="brand-text">一盏<em>中国茶事</em></span>
+  </a>
+  <nav class="site-nav" aria-label="主导航">
+    <a href="#seven" data-nav>七系</a>
+    <a href="#teas" data-nav>名茶</a>
+    <a href="#brew" data-nav>冲泡</a>
+    <a href="#cheat" data-nav>速查</a>
+    <a href="#identify" data-nav>辨茶</a>
+    <a href="#glossary" data-nav>词典</a>
+    <a href="#origin" data-nav>产地</a>
+    <a href="#culture" data-nav>茶事</a>
+  </nav>
+  <button class="nav-toggle" id="navToggle" aria-label="展开导航" aria-expanded="false">
+    <span></span><span></span>
+  </button>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero" aria-label="开篇">
+    <div class="hero-media">
+      <img src="assets/img/hero.jpg" alt="一席中式茶桌：盖碗、茶海、品茗杯与山茶花" fetchpriority="high">
+    </div>
+    <div class="hero-veil" aria-hidden="true"></div>
+    <div class="hero-leaves" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="hero-inner">
+      <p class="eyebrow">A FIELD GUIDE TO CHINESE TEA</p>
+      <h1>
+        <span class="hero-vertical">一盏</span>
+        <span class="hero-main">中国茶事</span>
+      </h1>
+      <p class="hero-lead">一片叶子，被火、风、时间与人的手，变成一杯有性格的茶。<br>这是一份给自己用的学习笔记：怎么认、怎么泡、怎么喝懂。</p>
+      <div class="hero-actions">
+        <a class="btn" href="#seven">开始识茶<span class="arr">↓</span></a>
+        <button class="btn btn-ghost" id="oracleBtn" type="button">抽一支今日茶签</button>
+      </div>
+      <p class="hero-meta"><b>7</b> 大茶类 · <b>33</b> 款名茶 · 一份可以动手的识茶泡茶指南</p>
+    </div>
+
+    <aside class="oracle" id="oracleCard" hidden aria-live="polite">
+      <div class="oracle-head">
+        <span>今日茶签</span>
+        <button type="button" id="oracleClose" aria-label="关闭">×</button>
+      </div>
+      <p class="oracle-cat" id="oracleCat">绿茶 · 性寒</p>
+      <h3 id="oracleName">西湖龙井</h3>
+      <p id="oracleText">豆香沉稳，鲜醇回甘。</p>
+      <div class="oracle-actions">
+        <button class="link-btn" type="button" id="oracleAgain">换一支</button>
+        <button class="link-btn" type="button" id="oracleOpen">看详情 →</button>
+      </div>
+    </aside>
+
+    <div class="steam" aria-hidden="true"><i></i><i></i><i></i></div>
+    <a class="scroll-cue" href="#seven" aria-label="向下浏览">
+      <span>向下</span><i></i>
+    </a>
+  </section>
+
+  <!-- 七系 -->
+  <section class="section section-seven" id="seven">
+    <div class="section-head reveal">
+      <p class="kicker"><span>壹</span> THE SEVEN FAMILIES</p>
+      <h2>一叶七变<span class="head-note">同一片鲜叶，因发酵程度不同，走向七种性格</span></h2>
+      <p class="section-sub">拖动发酵光谱，看茶多酚如何被时间改写。从左到右，颜色由绿转红，滋味由鲜爽转向醇厚。</p>
+    </div>
+
+    <div class="spectrum reveal">
+      <div class="spectrum-top">
+        <label for="fermentRange" class="spectrum-label">发酵程度 <b id="fermentPct">0%</b></label>
+        <span class="spectrum-hint">拖动或点击下方茶类</span>
+      </div>
+      <input type="range" id="fermentRange" min="0" max="6" step="1" value="0" aria-label="选择茶类，按发酵程度排序">
+      <div class="spectrum-dots" id="spectrumDots" role="tablist" aria-label="七大茶类"></div>
+    </div>
+
+    <div class="seven-stage reveal">
+      <figure class="stage-figure">
+        <div class="figure-frame">
+          <img id="catImage" src="assets/img/longjing.jpg" alt="西湖龙井干茶与茶汤">
+          <span class="figure-stamp" id="catStamp">壹</span>
+        </div>
+        <figcaption id="catCaption">西湖龙井 · 干茶与茶汤</figcaption>
+      </figure>
+
+      <div class="stage-panel" id="catPanel" aria-live="polite">
+        <div class="cat-head">
+          <span class="cat-index" id="catIndex">01</span>
+          <h3 id="catName">绿茶</h3>
+          <span class="cat-nature" id="catNature">性寒</span>
+        </div>
+        <p class="cat-en" id="catEn">GREEN TEA</p>
+        <p class="cat-desc" id="catDesc"></p>
+
+        <div class="cat-stats">
+          <div><span>发酵</span><b id="catFerment">不发酵 · 0%</b></div>
+          <div><span>工艺</span><b id="catCraft">杀青 · 揉捻 · 干燥</b></div>
+          <div><span>宜饮</span><b id="catTime">上午 9:00–11:00</b></div>
+        </div>
+
+        <div class="cat-mid">
+          <div class="cat-radar">
+            <svg id="catRadar" viewBox="0 0 260 230" role="img" aria-label="风味雷达图"></svg>
+          </div>
+          <div class="cat-notes">
+            <div><span class="note-k">香气</span><p id="catFlavor"></p></div>
+            <div class="cat-lists">
+              <div><span class="note-k good">适合</span><p id="catSuitable"></p></div>
+              <div><span class="note-k bad">少饮</span><p id="catAvoid"></p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cat-teas">
+          <span class="note-k">代表名茶</span>
+          <div class="chip-row" id="catTeas"></div>
+          <p class="cat-more" id="catMore"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 名茶图谱 -->
+  <section class="section section-teas" id="teas">
+    <div class="section-head reveal">
+      <p class="kicker"><span>贰</span> THE COLLECTION</p>
+      <h2>名茶图谱<span class="head-note">三十三款茶，逐一点开看产地、风味、辨伪与冲泡</span></h2>
+      <div class="teas-tools">
+        <div class="filter-row" id="filterRow" role="group" aria-label="按茶类筛选"></div>
+        <label class="search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+          <input type="search" id="teaSearch" placeholder="搜茶名、产地或香气" aria-label="搜索茶叶">
+        </label>
+      </div>
+    </div>
+    <p class="result-line reveal"><span id="resultCount">33</span> 款茶 <span id="resultHint">· 点击卡片查看详解</span></p>
+    <div class="tea-grid" id="teaGrid"></div>
+  </section>
+
+  <!-- 冲泡实验室 -->
+  <section class="section section-brew" id="brew">
+    <div class="section-head reveal">
+      <p class="kicker"><span>叁</span> THE BREWING LAB</p>
+      <h2>冲泡实验室<span class="head-note">水温、投茶、出汤，三件事决定一杯茶</span></h2>
+      <p class="section-sub">选一款茶，调好参数，按下计时。每泡出汤后自动进入下一泡的节奏。</p>
+    </div>
+
+    <div class="brew-shell reveal">
+      <div class="brew-controls">
+        <div class="control">
+          <label for="brewTea">选择茶叶</label>
+          <div class="select-wrap">
+            <select id="brewTea"></select>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+          <p class="control-hint" id="brewTeaHint"></p>
+        </div>
+
+        <div class="control">
+          <span class="control-label">茶器</span>
+          <div class="segmented" id="vesselSeg" role="group" aria-label="选择茶器">
+            <button type="button" data-vessel="玻璃杯" class="active">玻璃杯</button>
+            <button type="button" data-vessel="盖碗">盖碗</button>
+            <button type="button" data-vessel="紫砂壶">紫砂壶</button>
+          </div>
+        </div>
+
+        <div class="control">
+          <div class="control-label-row">
+            <label for="tempRange">水温</label>
+            <output id="tempOut">85°C</output>
+          </div>
+          <input type="range" id="tempRange" min="70" max="100" step="1" value="85" aria-label="水温">
+          <div class="range-notes"><span>70°C</span><span class="rec-band" id="recBand">建议 80–85°C</span><span>100°C</span></div>
+        </div>
+
+        <div class="control steppers">
+          <div class="stepper">
+            <span class="control-label">投茶</span>
+            <div class="stepper-row">
+              <button type="button" data-step="grams-0.5" aria-label="减少投茶量">−</button>
+              <output id="gramsOut">3g</output>
+              <button type="button" data-step="grams+0.5" aria-label="增加投茶量">+</button>
+            </div>
+          </div>
+          <div class="stepper">
+            <span class="control-label">注水</span>
+            <div class="stepper-row">
+              <button type="button" data-step="ml-10" aria-label="减少水量">−</button>
+              <output id="mlOut">150ml</output>
+              <button type="button" data-step="ml+10" aria-label="增加水量">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ratio-line">
+          <span>茶水比</span>
+          <b id="ratioOut">1 : 50</b>
+          <span class="ratio-tag" id="ratioTag">清饮</span>
+        </div>
+
+        <div class="control">
+          <span class="control-label">本泡建议</span>
+          <p class="brew-advice" id="brewAdvice">85°C · 60 秒 · 可冲 3 泡</p>
+        </div>
+      </div>
+
+      <div class="brew-stage">
+        <div class="stage-top">
+          <span id="steepLabel">第 1 泡</span>
+          <span class="stage-tea" id="stageTea">西湖龙井</span>
+        </div>
+
+        <div class="timer-wrap">
+          <svg class="timer-ring" viewBox="0 0 220 220" aria-hidden="true">
+            <circle class="ring-track" cx="110" cy="110" r="96"></circle>
+            <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="96"></circle>
+          </svg>
+          <div class="timer-face">
+            <span class="timer-state" id="timerState">准备</span>
+            <strong id="timerTime">01:00</strong>
+            <span class="timer-sub" id="timerSub">第 1 泡 · 60 秒</span>
+          </div>
+        </div>
+
+        <div class="timer-actions">
+          <button class="btn btn-solid" id="timerBtn" type="button">开始计时</button>
+          <button class="btn btn-ghost" id="nextBtn" type="button" disabled>下一泡</button>
+          <button class="link-btn" id="resetBtn" type="button">重置</button>
+        </div>
+
+        <p class="timer-hint" id="timerHint">水烧开后先温杯，再注水。绿茶不建议用刚沸的水。</p>
+
+        <div class="steep-track">
+          <span class="track-label">冲泡记录</span>
+          <ol id="steepTrack"><li class="empty">还没有出汤记录</li></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="brew-notes reveal">
+      <div><span>1</span><h4>温杯</h4><p>用热水烫过盖碗与品杯，既清洁，也避免茶汤遇冷降温过快。</p></div>
+      <div><span>2</span><h4>注水</h4><p>沿碗壁缓注，避免直冲茶叶。绿茶可先注水后投茶，看叶片舒展。</p></div>
+      <div><span>3</span><h4>出汤</h4><p>到时即出，不留底。每泡递增 5–15 秒，保持滋味平稳下降。</p></div>
+    </div>
+  </section>
+
+  <!-- 冲泡速查 -->
+  <section class="section section-cheat" id="cheat">
+    <div class="section-head reveal">
+      <p class="kicker"><span>肆</span> BREW CHEAT SHEET</p>
+      <h2>冲泡速查表<span class="head-note">一张表，泡遍三十三款茶</span></h2>
+      <p class="section-sub">记不住参数时翻这里。按茶类筛选、点表头排序，点茶名直接看详解。</p>
+    </div>
+    <div class="teas-tools reveal">
+      <div class="filter-row" id="cheatFilter" role="group" aria-label="按茶类筛选速查表"></div>
+      <label class="search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <input type="search" id="cheatSearch" placeholder="搜茶名或茶器" aria-label="搜索速查表">
+      </label>
+    </div>
+    <p class="cheat-swipe-hint" aria-hidden="true">← 左右滑动查看完整参数 →</p>
+    <div class="cheat-table-wrap reveal">
+      <table class="cheat-table">
+        <thead>
+          <tr>
+            <th data-sort="name" scope="col">茶名</th>
+            <th data-sort="cat" scope="col">茶类</th>
+            <th data-sort="temp" scope="col">水温</th>
+            <th scope="col">茶水比</th>
+            <th data-sort="time" scope="col">首泡</th>
+            <th data-sort="steeps" scope="col">耐泡</th>
+            <th scope="col">茶器</th>
+          </tr>
+        </thead>
+        <tbody id="cheatBody"></tbody>
+      </table>
+    </div>
+    <div class="cheat-extra reveal">
+      <div class="pour-block">
+        <h3>四种注水方式</h3>
+        <div class="pour-grid" id="pourGrid"></div>
+      </div>
+      <div class="water-block">
+        <h3>水温为什么重要</h3>
+        <div class="water-list" id="waterList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 辨茶 -->
+  <section class="section section-identify" id="identify">
+    <div class="section-head reveal">
+      <p class="kicker"><span>伍</span> HOW TO JUDGE</p>
+      <h2>辨茶五步<span class="head-note">不靠玄学，靠可观察的细节</span></h2>
+      <p class="section-sub">看干茶、闻香气、观汤色、品滋味、看叶底。五步走完，一泡茶的工艺与仓储基本无所遁形。</p>
+    </div>
+
+    <div class="five-steps reveal">
+      <div class="step-tabs" id="stepTabs" role="tablist" aria-label="辨茶步骤"></div>
+      <div class="step-panel" id="stepPanel" aria-live="polite">
+        <div class="step-panel-head">
+          <span id="stepNum">01</span>
+          <div>
+            <h3 id="stepTitle"></h3>
+            <p id="stepIntro"></p>
+          </div>
+        </div>
+        <ul class="step-checks" id="stepChecks"></ul>
+        <p class="step-pitfall"><span>常见误区</span><em id="stepPitfall"></em></p>
+      </div>
+    </div>
+
+    <div class="compare-head reveal">
+      <h3>三组容易认错的茶</h3>
+      <p>点击卡片翻面，看关键区别。</p>
+    </div>
+    <div class="compare-grid reveal" id="compareGrid"></div>
+  </section>
+
+  <!-- 茶缘测试 -->
+  <section class="section section-quiz" id="quiz">
+    <div class="quiz-inner reveal">
+      <div class="quiz-copy">
+        <p class="kicker light"><span>陆</span> FIND YOUR CUP</p>
+        <h2>测一测<br>你的茶缘</h2>
+        <p>四个问题，从香气、体质、时段与口感出发，找到当下最适合你的那一类茶。</p>
+        <div class="quiz-deco" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><path d="M18 44h70v20a30 30 0 0 1-30 30H48a30 30 0 0 1-30-30V44Z"></path><path d="M88 50h8a12 12 0 0 1 0 24h-8"></path><path d="M36 28c0-8 8-8 8-16M54 28c0-8 8-8 8-16"></path></svg>
+        </div>
+      </div>
+
+      <div class="quiz-card">
+        <div class="quiz-progress"><span id="quizBar"></span></div>
+        <div class="quiz-step" id="quizStep">
+          <p class="quiz-count" id="quizCount">第 1 / 4 题</p>
+          <h3 id="quizQuestion"></h3>
+          <div class="quiz-options" id="quizOptions"></div>
+        </div>
+        <div class="quiz-result" id="quizResult" hidden>
+          <p class="quiz-count">你的茶缘</p>
+          <h3 id="quizResultName">乌龙茶</h3>
+          <p class="quiz-result-desc" id="quizResultDesc"></p>
+          <div class="result-teas" id="quizResultTeas"></div>
+          <div class="quiz-result-actions">
+            <button class="btn btn-solid" id="quizBrew" type="button">去泡这一款</button>
+            <button class="link-btn" id="quizRestart" type="button">重新测试</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 产地 -->
+  <section class="section section-origin" id="origin">
+    <div class="section-head reveal">
+      <p class="kicker"><span>柒</span> WHERE TEA GROWS</p>
+      <h2>茶之源<span class="head-note">北纬 18° 到 37°，四条茶区带</span></h2>
+      <p class="section-sub">茶区不只是地理概念，它决定了品种、采摘期与滋味骨架。点击纬度带上的茶区，查看它的风土与名茶。</p>
+    </div>
+
+    <div class="origin-shell reveal">
+      <div class="lat-panel">
+        <div class="lat-head">
+          <span>纬度</span>
+          <span class="lat-axis-note">茶树分布北缘约至 37°N</span>
+        </div>
+        <div class="lat-band" id="latBand">
+          <div class="lat-axis" aria-hidden="true">
+            <span>18°</span><span>24°</span><span>30°</span><span>36°</span>
+          </div>
+          <div class="lat-grid" aria-hidden="true"></div>
+          <div class="lat-bars" id="latBars"></div>
+        </div>
+        <p class="lat-foot">* 纬度区间为示意，实际茶区受海拔、坡向与季风影响。</p>
+      </div>
+      <div class="region-card" id="regionCard" aria-live="polite">
+        <p class="region-lat" id="regionLat"></p>
+        <h3 id="regionName"></h3>
+        <p class="region-provinces" id="regionProvinces"></p>
+        <p class="region-char" id="regionChar"></p>
+        <p class="region-sub">代表名茶</p>
+        <div class="region-teas" id="regionTeas"></div>
+        <p class="region-note" id="regionNote"></p>
+      </div>
+    </div>
+
+    <figure class="mountain reveal">
+      <img src="assets/img/mountain.jpg" alt="晨雾中的中国茶山梯田" loading="lazy">
+      <figcaption>
+        <span>高山云雾出好茶</span>
+        <p>海拔、温差与漫射光，让叶片在缓慢生长中积累更多氨基酸与芳香物质。</p>
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- 茶文化 -->
+  <section class="section section-culture" id="culture">
+    <div class="section-head reveal">
+      <p class="kicker"><span>捌</span> A THOUSAND YEARS</p>
+      <h2>茶事千年<span class="head-note">从药用到日常，从煎煮到冲泡</span></h2>
+      <p class="section-sub">中国人的饮茶方式，经历过三次大转向：唐代煎茶、宋代点茶、明代瀹饮。每一次改变，都重新定义了茶的味道。</p>
+    </div>
+
+    <div class="timeline reveal">
+      <div class="timeline-nav" id="timelineNav" role="tablist" aria-label="茶文化年代"></div>
+      <div class="timeline-panel" id="timelinePanel" aria-live="polite">
+        <span class="era-ghost" id="eraGhost">唐</span>
+        <div class="era-body">
+          <p class="era-years" id="eraYears"></p>
+          <h3 id="eraTitle"></h3>
+          <p class="era-text" id="eraText"></p>
+          <div class="era-notes" id="eraNotes"></div>
+        </div>
+        <figure class="era-figure" id="eraFigure">
+          <img src="assets/img/diancha.jpg" alt="宋代点茶：黑釉建盏与茶筅" loading="lazy">
+          <figcaption>宋 · 点茶 · 击拂出汤花</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="culture-bottom reveal">
+      <div class="ritual">
+        <h3>茶席上的三条老规矩</h3>
+        <ul>
+          <li><b>酒满敬人，茶满欺人。</b>茶倒七分，留三分人情，也免得烫手。</li>
+          <li><b>叩指谢茶。</b>长辈斟茶，以食指与中指轻叩桌面，代跪谢之礼。</li>
+          <li><b>先客后主，及时续水。</b>一泡茶淡了就该换，不让客人喝「水味」。</li>
+        </ul>
+      </div>
+      <div class="vessels">
+        <h3>认识几件茶器</h3>
+        <div class="vessel-grid">
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 32h36v8a18 18 0 0 1-18 18 18 18 0 0 1-18-18v-8Z"></path><path d="M10 32h44M26 22c0-4 4-4 4-8M36 22c0-4 4-4 4-8"></path></svg>
+            <b>盖碗</b><span>天盖、地托、人育，三才合一</span>
+          </div>
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 26h28l-4 26H22l-4-26Z"></path><path d="M14 26h36M26 18c0-6 12-6 12 0"></path></svg>
+            <b>公道杯</b><span>先匀汤，再分杯，浓淡一致</span>
+          </div>
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 30h24v10a12 12 0 0 1-24 0V30Z"></path><path d="M44 32h5a6 6 0 0 1 0 12h-5M16 20h32"></path></svg>
+            <b>品茗杯</b><span>小杯啜饮，聚香也聚神</span>
+          </div>
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 46c10-14 26-18 38-22-4 14-10 26-24 30-5-1-10-4-14-8Z"></path><path d="M20 42c6-2 12-2 18 0"></path></svg>
+            <b>茶则</b><span>量茶入则，取茶不沾手</span>
+          </div>
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M22 14v26M22 40c0 8 8 10 8 10M32 22c8 2 8 16 0 18"></path><path d="M40 16l6 30"></path></svg>
+            <b>茶针</b><span>疏通气孔，撬取紧压茶</span>
+          </div>
+          <div class="vessel-item">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="12" y="20" width="40" height="26" rx="3"></rect><path d="M12 30h40M20 20v-6M44 20v-6"></path></svg>
+            <b>茶巾</b><span>拭杯、吸水，保持席面干净</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 术语词典 -->
+  <section class="section section-glossary" id="glossary">
+    <div class="section-head reveal">
+      <p class="kicker"><span>玖</span> TASTING VOCABULARY</p>
+      <h2>茶学术语词典<span class="head-note">把「玄乎」的词，翻译成喝得到的感受</span></h2>
+      <p class="section-sub">回甘、生津、喉韵、岩韵……读懂这些词，品鉴笔记才写得明白。按类别筛选或直接搜索。</p>
+    </div>
+    <div class="teas-tools reveal">
+      <div class="filter-row" id="glossFilter" role="group" aria-label="按类别筛选术语"></div>
+      <label class="search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <input type="search" id="glossSearch" placeholder="搜术语，如「回甘」" aria-label="搜索术语">
+      </label>
+    </div>
+    <div class="gloss-grid reveal" id="glossGrid"></div>
+  </section>
+
+  <!-- 误区 -->
+  <section class="section section-myths" id="myths">
+    <div class="section-head reveal">
+      <p class="kicker"><span>拾</span> COMMON MYTHS</p>
+      <h2>六个喝茶误区<span class="head-note">把玄学放一边，回到茶汤本身</span></h2>
+    </div>
+    <div class="myths-list reveal" id="mythsList"></div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="foot-mark">茶</div>
+  <p class="foot-title">愿你在茶香里，遇见属于自己的那一盏。</p>
+  <div class="foot-cols">
+    <div><span>内容说明</span><p>本站内容依据公开茶学资料与常见品鉴经验整理，用于日常饮茶参考，不构成医疗或健康建议。特殊体质、孕期及慢性病人群请遵医嘱。</p></div>
+    <div><span>图片来源</span><p>站内图片为 AI 生成的意境示意图，用于呈现茶汤、干茶与茶席氛围，不代表具体商品。请以实际茶品为准。</p></div>
+    <div><span>关于</span><p>一盏 · 中国茶事<br>七大茶系 · 三十三款名茶<br>识茶、泡茶、辨茶与茶文化</p></div>
+  </div>
+  <p class="foot-copy">© 2026 一盏 · 中国茶事</p>
+</footer>
+
+<!-- 茶叶详情 -->
+<div class="modal" id="teaModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" data-close aria-label="关闭详情">×</button>
+    <div class="modal-media">
+      <img id="modalImg" src="assets/img/longjing.jpg" alt="">
+      <span class="modal-cat" id="modalCat"></span>
+      <p class="modal-photo-note">意境示意图</p>
+    </div>
+    <div class="modal-body">
+      <p class="modal-en" id="modalEn"></p>
+      <h2 id="modalTitle">西湖龙井</h2>
+      <p class="modal-region" id="modalRegion"></p>
+      <p class="modal-tags" id="modalTags"></p>
+
+      <div class="modal-specs">
+        <div><span>外形</span><p id="modalShape"></p></div>
+        <div><span>香气</span><p id="modalAroma"></p></div>
+        <div><span>汤色</span><p id="modalLiquor"></p></div>
+        <div><span>滋味</span><p id="modalTaste"></p></div>
+      </div>
+
+      <div class="modal-brew">
+        <div><span>水温</span><b id="modalTemp"></b></div>
+        <div><span>茶水比</span><b id="modalRatio"></b></div>
+        <div><span>首泡</span><b id="modalTime"></b></div>
+        <div><span>茶器</span><b id="modalVessel"></b></div>
+      </div>
+
+      <div class="modal-block">
+        <h4>怎么辨</h4>
+        <p id="modalIdentify"></p>
+      </div>
+      <div class="modal-block modal-learn">
+        <h4>每泡口感变化</h4>
+        <ol class="steep-notes" id="modalSteeps"></ol>
+      </div>
+      <div class="modal-block">
+        <h4>冲泡要点</h4>
+        <p id="modalBrewTip"></p>
+      </div>
+      <div class="modal-block">
+        <h4>容易混淆</h4>
+        <p id="modalConfuse"></p>
+      </div>
+      <div class="modal-block">
+        <h4>一盏茶的故事</h4>
+        <p id="modalStory"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-solid" id="modalBrewBtn" type="button">用这个参数泡一杯</button>
+        <span class="modal-harvest" id="modalHarvest"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
