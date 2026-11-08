@@ -1857,7 +1857,9 @@ input[type="range"]::-moz-range-thumb {
 }
 .foot-cols > div > span { font-family: var(--sans); font-size: 13.5px; letter-spacing: .24em; color: #d8b37a; display: block; margin-bottom: 10px; }
 .foot-cols p { font-size: 15.5px; line-height: 1.95; color: rgba(251,248,240,.55); }
-.foot-copy { margin-top: 42px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .2em; color: var(--foot-copy-ink); }
+.foot-copy { margin-top: 12px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .2em; color: var(--foot-copy-ink); }
+.foot-copy a { color: inherit; text-underline-offset: 3px; }
+.foot-update { margin-top: 42px; font-family: var(--sans); font-size: 13.5px; letter-spacing: .14em; color: rgba(251, 248, 240, .62); }
 
 /* ============ modal ============ */
 .modal {
