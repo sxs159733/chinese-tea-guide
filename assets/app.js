@@ -194,7 +194,7 @@
       catImage.classList.add('swap');
       setTimeout(() => {
         catImage.src = c.image;
-        catImage.alt = c.teas[0] + '的干茶与茶汤';
+        catImage.alt = c.teas[0] + '茶叶意境示意图';
         catImage.onload = () => catImage.classList.remove('swap');
         setTimeout(() => catImage.classList.remove('swap'), 500);
       }, 160);
@@ -248,7 +248,7 @@
         card.setAttribute('aria-label', t.name + '，查看详情');
         card.innerHTML = `
           <div class="tea-card-media">
-            <img src="${t.image}" alt="${t.name}的干茶与茶汤" loading="lazy">
+            <img src="${t.image}" alt="${t.name}茶叶意境示意图" width="860" height="1075" loading="lazy" decoding="async">
             <span class="tea-card-cat">${cat.name}</span>
             <span class="tea-card-index">${pad2(TEAS.indexOf(t) + 1)}</span>
           </div>
@@ -283,7 +283,7 @@
     lastFocus = document.activeElement;
 
     $('#modalImg').src = t.image;
-    $('#modalImg').alt = t.name + '的干茶与茶汤';
+    $('#modalImg').alt = t.name + '茶叶意境示意图';
     $('#modalCat').textContent = cat.name + ' · ' + cat.nature;
     $('#modalEn').textContent = t.en;
     $('#modalTitle').textContent = t.name;
