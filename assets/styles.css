@@ -642,7 +642,7 @@ input[type="range"]::-moz-range-thumb {
   transition: color .2s, background .2s;
 }
 .spectrum-dots button b { font-family: var(--serif); font-size: 17.5px; font-weight: 500; }
-.spectrum-dots button span { font-size: 12.5px; letter-spacing: .04em; opacity: .8; }
+.spectrum-dots button span { font-size: 12.5px; letter-spacing: .04em; opacity: 1; color: #5f6455; }
 .spectrum-dots button:hover { color: var(--ink); background: rgba(34,38,31,.04); }
 .spectrum-dots button.active { color: var(--cinnabar); }
 .spectrum-dots button.active b { font-weight: 700; }
@@ -1199,7 +1199,7 @@ input[type="range"]::-moz-range-thumb {
   min-height: 2.6em;
 }
 .steep-track { width: 100%; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(251,248,240,.12); }
-.track-label { font-family: var(--sans); font-size: 13.5px; letter-spacing: .22em; color: rgba(251,248,240,.45); }
+.track-label { font-family: var(--sans); font-size: 13.5px; letter-spacing: .22em; color: rgba(251,248,240,.62); }
 .steep-track ol { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .steep-track li {
   font-family: var(--sans);
@@ -1211,7 +1211,7 @@ input[type="range"]::-moz-range-thumb {
   color: rgba(251,248,240,.85);
   animation: chipIn .35s var(--ease);
 }
-.steep-track li.empty { border: 0; padding: 0; color: rgba(251,248,240,.35); }
+.steep-track li.empty { border: 0; padding: 0; color: rgba(251,248,240,.62); }
 @keyframes chipIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 
 .brew-notes {
@@ -1603,7 +1603,7 @@ input[type="range"]::-moz-range-thumb {
   font-family: var(--sans);
   font-size: 12.5px;
   letter-spacing: .24em;
-  color: rgba(251,248,240,.42);
+  color: rgba(251,248,240,.62);
 }
 .region-teas span {
   font-family: var(--sans);
@@ -2245,7 +2245,7 @@ input[type="range"]::-moz-range-thumb {
   .pour-grid { grid-template-columns: 1fr; }
   .water-range { width: 78px; font-size: 17px; }
   .cheat-table th, .cheat-table td { padding: 11px 14px; }
-  .tea-card-media { aspect-ratio: 16 / 11; }
+  .tea-card-media { aspect-ratio: 4 / 5; }
   .teas-tools { flex-direction: column; align-items: stretch; }
   .search-box { width: 100%; }
   .steppers { grid-template-columns: 1fr; }
@@ -2299,4 +2299,14 @@ input[type="range"]::-moz-range-thumb {
   }
   .reveal { opacity: 1; transform: none; }
   .hero-media img { animation: none; transform: none; }
+}
+/* a11y: 表单控件原有 outline:none 覆盖了全局 :focus-visible，键盘焦点不可见。
+   置于文件末尾保证优先级，并避开 PR #1 在 :focus-visible 段落的插入位置，避免合并冲突。 */
+.search-box input:focus-visible {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 3px;
+}
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 6px;
 }
