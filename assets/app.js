@@ -211,6 +211,7 @@
   const search = $('#teaSearch');
   let filterCat = 'all';
   let query = '';
+  let teaSort = 'default';
 
   const filters = [{ id: 'all', name: '全部' }].concat(CATEGORIES.map(c => ({ id: c.id, name: c.name })));
   filters.forEach(f => {
@@ -234,6 +235,25 @@
       const textOk = !q || [t.name, t.region, t.aroma, t.taste, t.en, catById(t.cat).name].join(' ').toLowerCase().includes(q);
       return catOk && textOk;
     });
+    /* 按云端评分 / 评论数排序：无数据的条目始终排在后面 */
+    if (teaSort === 'rating' || teaSort === 'comments') {
+      const stat = t => window.JZSCommunity
+        ? window.JZSCommunity.getStats(t.id)
+        : { avg: 0, count: 0, comments: 0 };
+      list.sort((a, b) => {
+        const sa = stat(a), sb = stat(b);
+        if (teaSort === 'rating') {
+          if ((sa.count > 0) !== (sb.count > 0)) return sa.count > 0 ? -1 : 1;
+          if (sb.avg !== sa.avg) return sb.avg - sa.avg;
+          if (sb.count !== sa.count) return sb.count - sa.count;
+        } else {
+          if ((sa.comments > 0) !== (sb.comments > 0)) return sa.comments > 0 ? -1 : 1;
+          if (sb.comments !== sa.comments) return sb.comments - sa.comments;
+          if (sb.avg !== sa.avg) return sb.avg - sa.avg;
+        }
+        return TEAS.indexOf(a) - TEAS.indexOf(b);
+      });
+    }
     grid.innerHTML = '';
     if (!list.length) {
       grid.innerHTML = '<p class="tea-empty">没有找到这款茶，换个关键词试试。</p>';
@@ -257,17 +277,39 @@
             <p class="tea-card-en">${t.en}</p>
             <div class="tea-card-meta"><span>${t.region}</span><span>${t.aroma.split('，')[0]}</span></div>
             <div class="tea-card-brew"><span>${t.temp[0]}–${t.temp[1]}°C</span><span>${t.ratio}</span><span>${t.steeps} 泡</span></div>
+            <div class="rcard-rate" data-rate="${t.id}"></div>
             <div class="tea-card-cta"><span>产地 · 风味 · 辨伪 · 冲泡</span><i>→</i></div>
           </div>`;
         card.addEventListener('click', () => openTea(t.id));
         grid.appendChild(card);
       });
     }
+    if (window.JZSCommunity) window.JZSCommunity.decorateCards(grid);
     const count = $('#resultCount');
     count.textContent = list.length;
     $('#resultHint').textContent = query || filterCat !== 'all' ? '· 当前筛选结果' : '· 点击卡片查看详解';
   }
   search.addEventListener('input', e => { query = e.target.value; renderTeas(); });
+
+  const teaSortBar = $('#teaSort');
+  if (teaSortBar) teaSortBar.addEventListener('click', e => {
+    const b = e.target.closest('[data-sort]');
+    if (!b) return;
+    teaSort = b.dataset.sort;
+    $$('[data-sort]', teaSortBar).forEach(x => {
+      x.classList.toggle('active', x === b);
+      x.setAttribute('aria-pressed', String(x === b));
+    });
+    renderTeas();
+  });
+
+  /* 云端统计就绪后刷新卡片；若正按评分/评论排序则重排 */
+  window.addEventListener('jzs-stats', () => {
+    if (!window.JZSCommunity) return;
+    if (teaSort === 'rating' || teaSort === 'comments') renderTeas();
+    else window.JZSCommunity.decorateCards(grid);
+  });
+
   renderTeas();
 
   /* =========================================================
@@ -306,6 +348,7 @@
 
     modal.hidden = false;
     document.body.classList.add('no-scroll');
+    if (window.JZSCommunity) window.JZSCommunity.renderDialog(id, $('[data-community]'));
     requestAnimationFrame(() => $('.modal-close').focus());
   }
 

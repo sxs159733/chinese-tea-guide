@@ -1,0 +1,205 @@
+/* =========================================================
+   一盏 · 中国茶事 · 评分与评论
+   复用共享 Appwrite 后端（项目 qoder / 数据库 jzs），前端无密钥。
+   样式沿用站内设计变量，独立成文件，避免改动全站 styles.css。
+   ========================================================= */
+
+/* ---------- 列表排序 ---------- */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.sort-label {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  letter-spacing: .2em;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.sort-chip {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  letter-spacing: .08em;
+  padding: 5px 13px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .22s var(--ease), color .22s var(--ease), border-color .22s var(--ease);
+}
+.sort-chip:hover { border-color: var(--ink); }
+.sort-chip.active { background: var(--green); color: var(--site-on-accent); border-color: var(--green); }
+
+/* ---------- 卡片上的评分占位 ---------- */
+.rcard-rate {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rcard-rate:empty { display: none; }
+.rcard-rate b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.rcard-rate .cm-sep, .rcard-rate .no-rate { opacity: .72; }
+
+.stars {
+  position: relative;
+  display: inline-block;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: #ded1b8;
+  white-space: nowrap;
+}
+.stars-bg { display: inline-block; }
+.stars-fg {
+  position: absolute;
+  left: 0; top: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--gold);
+}
+.stars-lg { font-size: 1.35rem; letter-spacing: 2px; }
+
+/* ---------- 详情弹窗内的评分区 ---------- */
+.rd-community {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.rd-community:empty, .rd-community[hidden] { display: none; }
+.rd-community h3 {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: .24em;
+  color: var(--cinnabar);
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.cm-note { font-family: var(--sans); font-size: 14px; color: var(--muted); padding: 6px 0; }
+.cm-retry {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 30px;
+  padding: 3px 13px;
+  margin-left: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+.cm-retry:hover { border-color: var(--cinnabar); color: var(--cinnabar); }
+
+.cm-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.cm-avg { display: inline-flex; align-items: baseline; gap: 4px; }
+.cm-avg b { font-family: var(--serif); font-size: 34px; line-height: 1; color: var(--ink); font-weight: 500; }
+.cm-avg span { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+.cm-count { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+
+.cm-mine {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 12px 16px;
+  background: rgba(163, 64, 44, .05);
+  border: 1px solid var(--line);
+  border-radius: var(--site-radius);
+  margin-bottom: 20px;
+  font-family: var(--sans);
+  font-size: 14.5px;
+}
+.cm-mine-label { font-weight: 600; }
+.cm-pick { display: inline-flex; gap: 2px; }
+.cm-pick button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 2px 3px;
+  font-size: 25px;
+  line-height: 1.2;
+  color: #ded1b8;
+  transition: transform .22s var(--ease), color .22s var(--ease);
+}
+.cm-pick button.on { color: var(--gold); }
+.cm-pick button:hover { transform: scale(1.15); }
+.cm-pick button:disabled { cursor: wait; opacity: .65; }
+.cm-mine-note { font-size: 13px; color: var(--muted); }
+
+.cm-form { display: grid; gap: 10px; margin-bottom: 24px; }
+.cm-form input[type="text"], .cm-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--site-radius);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 14px;
+  font-family: var(--sans);
+  font-size: 14.5px;
+  line-height: 1.7;
+  transition: border-color .22s var(--ease), box-shadow .22s var(--ease);
+}
+.cm-form input:focus, .cm-form textarea:focus {
+  outline: none;
+  border-color: var(--cinnabar);
+  box-shadow: 0 0 0 3px rgba(163, 64, 44, .12);
+}
+.cm-form textarea { min-height: 84px; resize: vertical; }
+.cm-form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cm-form-foot .btn { padding: 8px 20px; font-size: 14px; letter-spacing: .12em; flex: none; cursor: pointer; }
+.cm-form-foot .btn:disabled { opacity: .6; cursor: wait; }
+.cm-form-msg { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+.cm-form-msg.err { color: #b4553f; }
+.cm-form-msg.ok { color: #4f7c48; }
+
+.cm-list h4 {
+  font-family: var(--sans) !important;
+  font-size: 13px !important;
+  font-weight: 600;
+  letter-spacing: .2em;
+  color: var(--cinnabar);
+  margin: 0 0 6px;
+}
+.cm-item { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.cm-item:last-child { border-bottom: 0; }
+.cm-item header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+  font-family: var(--sans);
+  font-size: 14px;
+}
+.cm-item header b { font-weight: 600; }
+.cm-item time { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cm-item p {
+  font-size: 15px;
+  line-height: 1.85;
+  margin: 0;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cm-empty { font-family: var(--sans); font-size: 14px; color: var(--muted); padding: 12px 0; }
+
+@media (max-width: 640px) {
+  .sort-bar { gap: 6px; }
+  .sort-chip { font-size: 12.5px; padding: 5px 10px; }
+  .cm-summary { gap: 9px; }
+  .cm-avg b { font-size: 28px; }
+  .cm-mine { gap: 8px 10px; padding: 10px 12px; }
+  .cm-form-foot { flex-wrap: wrap; }
+  .cm-form-foot .btn { padding: 8px 16px; }
+  .cm-item header { flex-wrap: wrap; gap: 2px 10px; }
+}

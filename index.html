@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#f6f1e6">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%23a3402c'/%3E%3Ctext x='32' y='45' font-size='38' font-family='serif' text-anchor='middle' fill='%23fbf7ee'%3E茶%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/styles.css">
+<link rel="stylesheet" href="assets/community.css">
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
@@ -151,6 +152,12 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
           <input type="search" id="teaSearch" placeholder="搜茶名、产地或香气" aria-label="搜索茶叶">
         </label>
+      </div>
+      <div class="sort-bar" id="teaSort" role="group" aria-label="名茶列表排序方式">
+        <span class="sort-label">排序</span>
+        <button type="button" class="sort-chip active" data-sort="default" aria-pressed="true">推荐顺序</button>
+        <button type="button" class="sort-chip" data-sort="rating" aria-pressed="false">评分 高 → 低</button>
+        <button type="button" class="sort-chip" data-sort="comments" aria-pressed="false">评论 多 → 少</button>
       </div>
     </div>
     <p class="result-line reveal"><span id="resultCount">33</span> 款茶 <span id="resultHint">· 点击卡片查看详解</span></p>
@@ -569,6 +576,7 @@
         <h4>一盏茶的故事</h4>
         <p id="modalStory"></p>
       </div>
+      <section class="rd-community" data-community aria-label="评分与评论"></section>
       <div class="modal-actions">
         <button class="btn btn-solid" id="modalBrewBtn" type="button">用这个参数泡一杯</button>
         <span class="modal-harvest" id="modalHarvest"></span>
@@ -578,6 +586,7 @@
 </div>
 
 <script src="assets/data.js"></script>
+<script src="assets/community.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
