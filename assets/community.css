@@ -125,7 +125,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  padding: 2px 3px;
+  padding: 5px 8px;
   font-size: 25px;
   line-height: 1.2;
   color: #ded1b8;
@@ -150,9 +150,17 @@
   transition: border-color .22s var(--ease), box-shadow .22s var(--ease);
 }
 .cm-form input:focus, .cm-form textarea:focus {
-  outline: none;
   border-color: var(--cinnabar);
   box-shadow: 0 0 0 3px rgba(163, 64, 44, .12);
+}
+/* 不再用 outline:none 覆盖全局 :focus-visible；键盘焦点需清晰可见 */
+.cm-form input:focus-visible,
+.cm-form textarea:focus-visible,
+.cm-pick button:focus-visible,
+.cm-retry:focus-visible,
+.sort-chip:focus-visible {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 3px;
 }
 .cm-form textarea { min-height: 84px; resize: vertical; }
 .cm-form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -182,7 +190,7 @@
   font-size: 14px;
 }
 .cm-item header b { font-weight: 600; }
-.cm-item time { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cm-item time { color: var(--muted); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .cm-item p {
   font-size: 15px;
   line-height: 1.85;
@@ -195,7 +203,7 @@
 
 @media (max-width: 640px) {
   .sort-bar { gap: 6px; }
-  .sort-chip { font-size: 12.5px; padding: 5px 10px; }
+  .sort-chip { font-size: 13px; padding: 5px 10px; }
   .cm-summary { gap: 9px; }
   .cm-avg b { font-size: 28px; }
   .cm-mine { gap: 8px 10px; padding: 10px 12px; }
