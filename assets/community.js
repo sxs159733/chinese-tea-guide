@@ -241,7 +241,8 @@
 
   /* ---------------- 详情弹窗评分评论区 ---------------- */
   function commentItemHTML(c) {
-    return '<article class="cm-item"><header><b>' + esc(c.name) + '</b><time>' + fmtDate(c.created_at) +
+    return '<article class="cm-item"><header><b>' + esc(c.name) +
+      '</b><time datetime="' + esc(c.created_at) + '">' + fmtDate(c.created_at) +
       '</time></header><p>' + esc(c.body) + '</p></article>';
   }
 
@@ -310,8 +311,8 @@
           (mine ? '已评 ' + mine + ' 星，点击星星可修改' : '点击星星即可评分') + '</span>' +
       '</div>' +
       '<form class="cm-form" data-cm-form>' +
-        '<input type="text" name="name" maxlength="20" placeholder="你的昵称（可选，20 字以内）" value="' + esc(savedName) + '" autocomplete="nickname">' +
-        '<textarea name="text" required maxlength="500" rows="3" placeholder="说说这款茶：香气、滋味、冲泡参数，或你的品饮心得…"></textarea>' +
+        '<input type="text" name="name" maxlength="20" aria-label="你的昵称（可选，20 字以内）" placeholder="你的昵称（可选，20 字以内）" value="' + esc(savedName) + '" autocomplete="nickname">' +
+        '<textarea name="text" required maxlength="500" aria-label="评论内容（必填，500 字以内）" rows="3" placeholder="说说这款茶：香气、滋味、冲泡参数，或你的品饮心得…"></textarea>' +
         '<div class="cm-form-foot">' +
           '<span class="cm-form-msg" data-cm-msg role="status"></span>' +
           '<button class="btn" type="submit">发布评论</button>' +

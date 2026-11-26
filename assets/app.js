@@ -7,6 +7,9 @@
   const catById = id => CATEGORIES.find(c => c.id === id);
   const teaById = id => TEAS.find(t => t.id === id);
   const pad2 = n => String(n).padStart(2, '0');
+  /* CSS 的 prefers-reduced-motion 只作用于 scroll-behavior；
+     scrollIntoView / scrollTo 显式传入的 behavior:'smooth' 会覆盖它，故在此统一判定 */
+  const SCROLL_BEHAVIOR = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth';
 
   const NUMERALS = ['壹', '贰', '叁', '肆', '伍', '陆', '柒'];
 
@@ -23,6 +26,49 @@
   const head = $('#siteHead');
   const bar = $('#scrollBar');
   let ticking = false;
+
+  /* =========================================================
+     2026-11-14 巡检补充：动态状态与输入语义（纯增量，不改既有渲染逻辑）
+     ========================================================= */
+
+  /* (1) 站内 #teaSort 的 .sort-chip 已正确维护 aria-pressed，但下列 5 组
+         「筛选 / 切换」按钮只有 .active 视觉类，屏幕阅读器读不出当前选中项（WCAG 4.1.2）。
+         stepTabs / timelineNav / 发酵光谱三处由 11-12 补丁用 aria-selected 处理，不在此列。
+         用事件委托统一同步，避免逐个改动渲染函数、与待合并 PR 产生行冲突。 */
+  const PRESSED_GROUPS = [
+    ['#filterRow', '.filter-chip'],
+    ['#cheatFilter', '.filter-chip'],
+    ['#glossFilter', '.filter-chip'],
+    ['#vesselSeg', 'button'],
+    ['#latBars', '.lat-bar']
+  ];
+  function syncPressed(root, sel) {
+    $$(sel, root).forEach(b => b.setAttribute('aria-pressed', String(b.classList.contains('active'))));
+  }
+  function syncAllPressed() {
+    PRESSED_GROUPS.forEach(g => { const r = $(g[0]); if (r) syncPressed(r, g[1]); });
+  }
+  // 脚本位于 body 末尾；DOMContentLoaded 时动态创建的筛选按钮已全部就位
+  document.addEventListener('DOMContentLoaded', syncAllPressed);
+  // 捕获阶段挂委托，setTimeout 保证本轮事件里所有 .active 切换完成后再同步
+  document.addEventListener('click', e => {
+    if (!e.target || !e.target.closest) return;
+    for (const g of PRESSED_GROUPS) {
+      if (e.target.closest(g[0])) {
+        const r = $(g[0]);
+        if (r) setTimeout(() => syncPressed(r, g[1]), 0);
+        break;
+      }
+    }
+  }, true);
+
+  /* (2) 3 个中文搜索框此前 0 个 autocomplete / spellcheck / enterkeyhint：
+         浏览器会给中文词条画拼写红线、弹出历史自动填充遮挡结果、软键盘回车键显示「前往」。 */
+  $$('input[type="search"]').forEach(el => {
+    el.setAttribute('autocomplete', 'off');
+    el.setAttribute('spellcheck', 'false');
+    el.setAttribute('enterkeyhint', 'search');
+  });
 
   function onScroll() {
     const y = window.scrollY;
@@ -68,7 +114,13 @@
   const navIO = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+        navLinks.forEach(a => {
+          const active = a.getAttribute('href') === '#' + e.target.id;
+          a.classList.toggle('active', active);
+          /* 原来只有视觉高亮，屏幕阅读器读不出「当前所在版块」 */
+          if (active) a.setAttribute('aria-current', 'location');
+          else a.removeAttribute('aria-current');
+        });
       }
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
@@ -91,7 +143,7 @@
   }
   oracleBtn.addEventListener('click', () => {
     drawOracle();
-    oracleCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    oracleCard.scrollIntoView({ block: 'nearest', behavior: SCROLL_BEHAVIOR });
   });
   $('#oracleAgain').addEventListener('click', drawOracle);
   $('#oracleClose').addEventListener('click', () => { oracleCard.hidden = true; });
@@ -125,10 +177,41 @@
     AXES.forEach((label, i) => {
       const [x, y] = pt(i, 1.24);
       const anchor = x < cx - 6 ? 'end' : x > cx + 6 ? 'start' : 'middle';
-      s += `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="${anchor}" font-size="10" fill="#777b6d" font-family="PingFang SC, Microsoft YaHei, sans-serif" letter-spacing=".08em">${label}</text>`;
+      /* 2026-11-15 巡检补充：10px 轴标签 + #777b6d 对米色底仅 3.85:1（未达 WCAG AA 4.5:1），
+         且颜色写死在 SVG 内联属性里，PR #1 修改 --site-muted 变量并不影响此处。
+         提到 11.5px，并换成实测达标的 #696d5f（对 paper 4.72:1 / surface 5.01:1）。 */
+      s += `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="${anchor}" font-size="11.5" fill="#696d5f" font-family="PingFang SC, Microsoft YaHei, sans-serif" letter-spacing=".08em">${label}</text>`;
     });
     s += '</g>';
     return s;
+  }
+
+  /* =========================================================
+     2026-11-15 巡检补充：滚动区键盘可达性与导航控件语义（纯增量）
+     ========================================================= */
+
+  /* (1) .cheat-table-wrap 是 overflow-x:auto 容器（表格 min-width:720px），
+         原先没有 tabindex / role / aria-label：窄屏下键盘用户无法聚焦后用方向键
+         横向滚动，被裁掉的后 5 列参数完全看不到（WCAG 2.1.1）。
+         同时「← 左右滑动查看完整参数 →」提示带 aria-hidden="true"，
+         读屏用户收不到任何可滚动提示。这里补属性，不改 index.html 以避免
+         与待合并 PR #1 / 11-12 补丁在 289-302 行的 hunk 冲突。 */
+  const cheatWrap = $('.cheat-table-wrap');
+  if (cheatWrap) {
+    cheatWrap.setAttribute('tabindex', '0');
+    cheatWrap.setAttribute('role', 'region');
+    cheatWrap.setAttribute('aria-label', '冲泡速查表，可用左右方向键滚动查看全部参数');
+  }
+  const swipeHint = $('.cheat-swipe-hint');
+  if (swipeHint) swipeHint.removeAttribute('aria-hidden');
+
+  /* (2) 移动端导航按钮有 aria-expanded 但缺 aria-controls，读屏无法把
+         「展开导航」按钮与被控制的菜单关联起来（WCAG 1.3.1）。 */
+  const navToggleBtn = $('#navToggle');
+  const navEl = $('.site-nav');
+  if (navToggleBtn && navEl) {
+    if (!navEl.id) navEl.id = 'siteNav';
+    navToggleBtn.setAttribute('aria-controls', navEl.id);
   }
 
   /* =========================================================
@@ -142,6 +225,9 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', 'catPanel');
+    b.setAttribute('aria-selected', 'false');
+    b.tabIndex = -1;
     b.dataset.index = i;
     b.innerHTML = `<b>${c.name}</b><span>${c.fermentLabel}</span>`;
     b.addEventListener('click', () => selectCat(i));
@@ -154,10 +240,13 @@
     const c = CATEGORIES[i];
     activeCat = i;
     range.value = i;
+    range.setAttribute('aria-valuetext', c.name + '，' +
+      (c.id === 'flower' ? '鲜花窨制' : c.fermentLabel + '，发酵程度 ' + c.ferment + '%'));
     $('#fermentPct').textContent = c.id === 'flower' ? '窨制' : c.ferment + '%';
     $$('button', dots).forEach((b, k) => {
       b.classList.toggle('active', k === i);
       b.setAttribute('aria-selected', String(k === i));
+      b.tabIndex = k === i ? 0 : -1;
     });
 
     $('#catIndex').textContent = pad2(i + 1);
@@ -194,13 +283,21 @@
       catImage.classList.add('swap');
       setTimeout(() => {
         catImage.src = c.image;
-        catImage.alt = c.teas[0] + '的干茶与茶汤';
+        catImage.alt = c.teas[0] + '茶叶意境示意图';
         catImage.onload = () => catImage.classList.remove('swap');
         setTimeout(() => catImage.classList.remove('swap'), 500);
       }, 160);
     }
   }
   range.addEventListener('input', e => selectCat(Number(e.target.value)));
+  $('#catPanel').setAttribute('role', 'tabpanel');
+  dots.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const next = (activeCat + (e.key === 'ArrowRight' ? 1 : -1) + CATEGORIES.length) % CATEGORIES.length;
+    selectCat(next);
+    $$('button', dots)[next].focus();
+  });
   selectCat(0);
 
   /* =========================================================
@@ -268,7 +365,7 @@
         card.setAttribute('aria-label', t.name + '，查看详情');
         card.innerHTML = `
           <div class="tea-card-media">
-            <img src="${t.image}" alt="${t.name}的干茶与茶汤" loading="lazy">
+            <img src="${t.image}" alt="${t.name}茶叶意境示意图" width="860" height="1075" loading="lazy" decoding="async">
             <span class="tea-card-cat">${cat.name}</span>
             <span class="tea-card-index">${pad2(TEAS.indexOf(t) + 1)}</span>
           </div>
@@ -317,6 +414,10 @@
      ========================================================= */
   const modal = $('#teaModal');
   let lastFocus = null;
+  /* 2026-11-15 巡检补充：aria-modal="true" 只声明语义，背景内容仍在读屏虚拟光标
+     与鼠标点击范围内。打开时对主内容/页头/页脚加 inert + aria-hidden，
+     关闭时先移除再归还焦点，避免焦点落在 inert 元素上而丢失。 */
+  const BG_REGIONS = [$('#top'), $('.site-head'), $('.site-foot')];
 
   function openTea(id) {
     const t = teaById(id);
@@ -325,7 +426,7 @@
     lastFocus = document.activeElement;
 
     $('#modalImg').src = t.image;
-    $('#modalImg').alt = t.name + '的干茶与茶汤';
+    $('#modalImg').alt = t.name + '茶叶意境示意图';
     $('#modalCat').textContent = cat.name + ' · ' + cat.nature;
     $('#modalEn').textContent = t.en;
     $('#modalTitle').textContent = t.name;
@@ -348,6 +449,11 @@
 
     modal.hidden = false;
     document.body.classList.add('no-scroll');
+    BG_REGIONS.forEach(el => {
+      if (!el) return;
+      el.setAttribute('inert', '');
+      el.setAttribute('aria-hidden', 'true');
+    });
     if (window.JZSCommunity) window.JZSCommunity.renderDialog(id, $('[data-community]'));
     requestAnimationFrame(() => $('.modal-close').focus());
   }
@@ -355,13 +461,20 @@
   function closeModal() {
     modal.hidden = true;
     document.body.classList.remove('no-scroll');
+    BG_REGIONS.forEach(el => {
+      if (!el) return;
+      el.removeAttribute('inert');
+      el.removeAttribute('aria-hidden');
+    });
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
   $$('[data-close]', modal).forEach(el => el.addEventListener('click', closeModal));
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !modal.hidden) closeModal();
     if (e.key === 'Tab' && !modal.hidden) {
-      const focusables = $$('button, [href], input, select, [tabindex]:not([tabindex="-1"])', modal).filter(el => !el.disabled && el.offsetParent !== null);
+      /* 补上 textarea / contenteditable / summary：社区模块在弹窗内动态注入
+         评论 <textarea>，原选择器漏掉它，Tab 到评论框后会跳出弹窗边界。 */
+      const focusables = $$('button, [href], input, select, textarea, [contenteditable="true"], summary, [tabindex]:not([tabindex="-1"])', modal).filter(el => !el.disabled && el.offsetParent !== null);
       if (!focusables.length) return;
       const first = focusables[0], last = focusables[focusables.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -372,7 +485,7 @@
     const t = teaById(TEAS.find(x => x.name === $('#modalTitle').textContent)?.id);
     if (t) setBrewTea(t.id, true);
     closeModal();
-    $('#brew').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#brew').scrollIntoView({ behavior: SCROLL_BEHAVIOR, block: 'start' });
   });
 
   /* =========================================================
@@ -396,6 +509,41 @@
     dark: '熟普先快速润洗一次，再正式冲泡。水温要足，出汤要快，汤色透亮为佳。',
     flower: '花茶忌滚水直冲，85–90°C 最能保住鲜灵花香。香气入水，比干花更重要。'
   };
+
+  /* =========================================================
+     2026-11-19 巡检补充：可访问名称与搜索地标（纯增量，不改既有渲染逻辑）
+     ========================================================= */
+
+  /* (A) 品牌链接 aria-label="回到首页" 完全不含可见文字「一盏中国茶事」，
+         语音控制用户念品牌名无法命中控件，读屏也丢失站点名称
+         （WCAG 2.5.3 Label in Name）。11-18 补丁已对齐 3 个搜索框的
+         aria-label 与 placeholder，但未覆盖首链接；印章「茶」为装饰图形。 */
+  const brandLink = $('.brand');
+  if (brandLink) {
+    const seal = $('.brand-seal', brandLink);
+    if (seal && !seal.hasAttribute('aria-hidden')) seal.setAttribute('aria-hidden', 'true');
+    if (brandLink.getAttribute('aria-label') === '回到首页') {
+      brandLink.setAttribute('aria-label', '一盏中国茶事，回到首页');
+    }
+  }
+
+  /* (B) 三个搜索区（名茶 / 速查表 / 词典）全站 role="search" 与 <form> 均为 0 处，
+         读屏用户无法用「地标导航」直接跳到搜索框，只能逐元素 Tab。
+         <label class="search-box"> 仅包裹 aria-hidden 的图标与输入框，
+         输入框已有自身 aria-label，故给 label 补 search 地标不会丢失可访问名称。 */
+  const SEARCH_LANDMARKS = [
+    ['#teaSearch', '搜索名茶'],
+    ['#cheatSearch', '搜索冲泡速查表'],
+    ['#glossSearch', '搜索茶学术语']
+  ];
+  SEARCH_LANDMARKS.forEach(pair => {
+    const input = $(pair[0]);
+    const box = input && input.closest('.search-box');
+    if (box && !box.hasAttribute('role')) {
+      box.setAttribute('role', 'search');
+      box.setAttribute('aria-label', pair[1]);
+    }
+  });
 
   const brew = {
     tea: 'longjing',
@@ -459,6 +607,7 @@
     $('#stageTea').textContent = t.name;
     $('#brewTeaHint').textContent = t.region + ' · ' + t.aroma.split('，')[0];
     tempRange.value = brew.temp;
+    tempRange.setAttribute('aria-valuetext', brew.temp + ' 摄氏度');
     $('#tempOut').textContent = brew.temp + '°C';
     gramsOut.textContent = brew.grams + 'g';
     mlOut.textContent = brew.ml + 'ml';
@@ -513,10 +662,17 @@
     });
   }
 
+  /* 2026-11-15 巡检补充：计时器改为墙钟计时。
+     原实现每秒 remaining -= 1，浏览器在后台标签页 / 锁屏时会把 setInterval
+     节流到 ≥1s 甚至 1 分钟，60 秒的闷泡会被拉长到数分钟，切回前台也不补偿。
+     这是「冲泡实验室」核心功能在真实使用场景（泡茶时切去看别的内容）的失准。 */
+  let timerDeadline = 0;
+
   function resetTimer(keepIndex) {
     clearInterval(brew.timer);
     brew.running = false;
     brew.finished = false;
+    timerDeadline = 0;
     if (!keepIndex) { brew.steepIndex = 0; brew.records = []; renderRecords(); }
     const sch = schedule();
     const idx = Math.min(brew.steepIndex, sch.length - 1);
@@ -532,10 +688,15 @@
   }
 
   function tick() {
-    brew.remaining -= 1;
+    if (timerDeadline) {
+      brew.remaining = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+    } else {
+      brew.remaining -= 1;
+    }
     if (brew.remaining <= 0) {
       brew.remaining = 0;
       clearInterval(brew.timer);
+      timerDeadline = 0;
       brew.running = false;
       brew.finished = true;
       timerTime.textContent = '00:00';
@@ -562,14 +723,25 @@
     if (brew.running) {
       clearInterval(brew.timer);
       brew.running = false;
+      if (timerDeadline) {
+        brew.remaining = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+        timerDeadline = 0;
+        timerTime.textContent = fmt(brew.remaining);
+      }
       timerBtn.textContent = '继续';
       timerState.textContent = '暂停';
       return;
     }
     brew.running = true;
+    timerDeadline = Date.now() + brew.remaining * 1000;
     timerBtn.textContent = '暂停';
     timerState.textContent = '闷泡中';
-    brew.timer = setInterval(tick, 1000);
+    brew.timer = setInterval(tick, 250);
+  });
+
+  /* 回到前台立即按真实经过时间校正一次，不必等下一个 interval */
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && brew.running && timerDeadline) tick();
   });
 
   nextBtn.addEventListener('click', () => {
@@ -613,7 +785,7 @@
     brew.vessel = t.vessel.includes('盖碗') ? '盖碗' : t.vessel.includes('紫砂') ? '紫砂壶' : '玻璃杯';
     $$('#vesselSeg button').forEach(x => x.classList.toggle('active', x.dataset.vessel === brew.vessel));
     resetTimer(false);
-    if (scroll) $('#brew').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scroll) $('#brew').scrollIntoView({ behavior: SCROLL_BEHAVIOR, block: 'start' });
   }
 
   brewSelect.addEventListener('change', e => setBrewTea(e.target.value));
@@ -629,7 +801,11 @@
   function selectStep(i) {
     stepIndex = i;
     const s = FIVE_STEPS[i];
-    $$('button', stepTabs).forEach((b, k) => b.classList.toggle('active', k === i));
+    $$('button', stepTabs).forEach((b, k) => {
+      b.classList.toggle('active', k === i);
+      b.setAttribute('aria-selected', String(k === i));
+      b.tabIndex = k === i ? 0 : -1;
+    });
     $('#stepNum').textContent = pad2(i + 1);
     $('#stepTitle').textContent = s.title;
     $('#stepIntro').textContent = s.intro;
@@ -643,9 +819,20 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', 'stepPanel');
+    b.setAttribute('aria-selected', 'false');
+    b.tabIndex = -1;
     b.innerHTML = `<span>${pad2(i + 1)}</span>${s.label}`;
     b.addEventListener('click', () => selectStep(i));
     stepTabs.appendChild(b);
+  });
+  stepPanel.setAttribute('role', 'tabpanel');
+  stepTabs.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const next = (stepIndex + (e.key === 'ArrowRight' ? 1 : -1) + FIVE_STEPS.length) % FIVE_STEPS.length;
+    selectStep(next);
+    $$('button', stepTabs)[next].focus();
   });
   selectStep(0);
 
@@ -838,6 +1025,9 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', 'timelinePanel');
+    b.setAttribute('aria-selected', 'false');
+    b.tabIndex = -1;
     b.innerHTML = `<b>${e.era}</b>${e.nav}`;
     b.addEventListener('click', () => selectEra(i));
     timelineNav.appendChild(b);
@@ -845,7 +1035,11 @@
 
   function selectEra(i) {
     const e = ERAS[i];
-    $$('button', timelineNav).forEach((b, k) => b.classList.toggle('active', k === i));
+    $$('button', timelineNav).forEach((b, k) => {
+      b.classList.toggle('active', k === i);
+      b.setAttribute('aria-selected', String(k === i));
+      b.tabIndex = k === i ? 0 : -1;
+    });
     $('#eraGhost').textContent = e.era;
     $('#eraYears').textContent = e.years;
     $('#eraTitle').textContent = e.title;
@@ -861,6 +1055,15 @@
       eraFigure.classList.add('is-hidden');
     }
   }
+  timelinePanel.setAttribute('role', 'tabpanel');
+  timelineNav.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault();
+    const cur = ERAS.findIndex(x => x.era === $('#eraGhost').textContent);
+    const next = (cur + (e.key === 'ArrowRight' ? 1 : -1) + ERAS.length) % ERAS.length;
+    selectEra(next);
+    $$('button', timelineNav)[next].focus();
+  });
   selectEra(3);
 
   /* =========================================================
@@ -924,12 +1127,18 @@
   }
 
   $$('.cheat-table th[data-sort]').forEach(th => {
-    th.addEventListener('click', () => {
+    const doSort = () => {
       const key = th.dataset.sort;
       cheatSort = { key, dir: cheatSort.key === key ? -cheatSort.dir : 1 };
-      $$('.cheat-table th').forEach(x => x.removeAttribute('aria-sort'));
+      $$('.cheat-table th[data-sort]').forEach(x => x.setAttribute('aria-sort', 'none'));
       th.setAttribute('aria-sort', cheatSort.dir === 1 ? 'ascending' : 'descending');
       renderCheat();
+    };
+    th.setAttribute('aria-sort', 'none');
+    th.addEventListener('click', doSort);
+    /* 表头原先只监听 click，键盘用户无法排序 */
+    th.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); doSort(); }
     });
   });
   cheatSearch.addEventListener('input', e => { cheatQuery = e.target.value; renderCheat(); });
@@ -948,6 +1157,128 @@
       <span class="water-range">${w.range}</span>
       <div><b>${w.tea}</b><p>${w.why}</p></div>
     </div>`).join('');
+
+  /* =========================================================
+     2026-11-18 巡检补充：控件语义与状态播报（纯增量，不改既有渲染逻辑）
+     ========================================================= */
+
+  /* (A) 风味雷达图：<svg role="img" aria-label="风味雷达图"> 的标签是写死的，
+         切换七大茶类后读屏仍只读到同一句「风味雷达图」，六轴分值只画在
+         多边形里、完全没有文本替代（WCAG 1.1.1 非文本内容）。
+         selectCat() 每次重绘 #catRadar 的 innerHTML，故用 MutationObserver
+         在重绘后把「茶类名 + 发酵度 + 六轴分值」写进 aria-label，
+         并补 SVG <title>/<desc> 供不支持 aria-label 的辅助技术取用。
+         aria-label 相等时直接返回，避免自身 insertBefore 触发观察器 recursion。 */
+  const radarSvg = $('#catRadar');
+  let radarLabelCache = '';
+  function syncRadarLabel() {
+    if (!radarSvg || typeof CATEGORIES === 'undefined' || typeof AXES === 'undefined') return;
+    const c = CATEGORIES[activeCat];
+    if (!c || !c.radar) return;
+    const parts = AXES.map((a, i) => a + ' ' + c.radar[i] + ' 分').join('，');
+    const label = c.name + '（' + (c.id === 'flower' ? '鲜花窨制' : c.fermentLabel + ' ' + c.ferment + '%') +
+                  '）风味雷达图；六项风味满分 100：' + parts;
+    if (radarLabelCache === label) return;
+    radarLabelCache = label;
+    radarSvg.setAttribute('aria-label', label);
+    const NS = 'http://www.w3.org/2000/svg';
+    let title = radarSvg.querySelector('title'), desc = radarSvg.querySelector('desc');
+    if (!title) {
+      title = document.createElementNS(NS, 'title');
+      radarSvg.insertBefore(title, radarSvg.firstChild);
+    }
+    if (!desc) {
+      desc = document.createElementNS(NS, 'desc');
+      radarSvg.insertBefore(desc, title.nextSibling);
+    }
+    title.textContent = c.name + '风味雷达图';
+    desc.textContent = label;
+  }
+  if (radarSvg && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(syncRadarLabel).observe(radarSvg, { childList: true });
+  }
+  syncRadarLabel();
+
+  /* (B1) 发酵程度滑块 min=0 max=6 实际是「茶类索引」，读屏只会读出 0~6 的裸数字，
+          与可见标签「发酵程度 0%」语义错位；水温滑块读「85」没有单位。
+          补 aria-valuetext 让读屏读出真实含义（WCAG 1.3.1 / 4.1.2）。 */
+  const fermentRange = $('#fermentRange');
+  function syncFermentText() {
+    if (!fermentRange || typeof CATEGORIES === 'undefined') return;
+    const c = CATEGORIES[Number(fermentRange.value)];
+    if (c) fermentRange.setAttribute('aria-valuetext',
+      c.name + '，' + (c.id === 'flower' ? '鲜花窨制' : c.fermentLabel + '，发酵程度 ' + c.ferment + '%'));
+  }
+  if (fermentRange) {
+    fermentRange.addEventListener('input', syncFermentText);
+    fermentRange.addEventListener('change', syncFermentText);
+    syncFermentText();
+  }
+  const tempRangeEl = $('#tempRange');
+  function syncTempText() {
+    if (!tempRangeEl) return;
+    tempRangeEl.setAttribute('aria-valuetext', tempRangeEl.value + ' 摄氏度');
+  }
+  if (tempRangeEl) {
+    tempRangeEl.addEventListener('input', syncTempText);
+    syncTempText();
+  }
+
+  /* (B2) 3 个 <output> 缺 for 关联，且未显式声明状态播报：点击 ± 按钮改投茶量 /
+          注水量、拖动水温时，读屏用户收不到「哪个参数变成了多少」（WCAG 4.1.3）。
+          <output> 隐式 role=status，这里显式补齐并给温度输出建立 for 关联。 */
+  const OUTPUT_FOR = { tempOut: 'tempRange', gramsOut: '', mlOut: '' };
+  $$('output').forEach(o => {
+    const src = OUTPUT_FOR[o.id];
+    if (src === undefined) return;
+    if (src && !o.hasAttribute('for')) o.setAttribute('for', src);
+    if (!o.hasAttribute('aria-live')) o.setAttribute('aria-live', 'polite');
+    if (!o.hasAttribute('aria-atomic')) o.setAttribute('aria-atomic', 'true');
+  });
+
+  /* (C) 移动端导航按钮 aria-label 恒为「展开导航」，菜单展开后读屏仍提示「展开」；
+         且整站唯一一处 Escape 处理属于详情弹窗，菜单打开后既不能按 Escape 关闭、
+         点击菜单外也不会收起，关闭后焦点不归还（WCAG 4.1.2 / 2.1.2 / 2.4.3）。
+         11-15 补丁只补了 aria-controls 与 visibility，此处补齐交互语义。 */
+  const navBtn = $('#navToggle');
+  const navMenu = $('.site-nav');
+  function syncNavLabel() {
+    if (!navBtn || !navMenu) return;
+    const open = navMenu.classList.contains('open');
+    navBtn.setAttribute('aria-label', open ? '收起导航' : '展开导航');
+    navBtn.setAttribute('aria-expanded', String(open));
+  }
+  function closeNav() {
+    if (!navMenu || !navMenu.classList.contains('open')) return;
+    navMenu.classList.remove('open');
+    document.body.classList.remove('no-scroll');
+    syncNavLabel();
+  }
+  if (navBtn && navMenu) {
+    navBtn.addEventListener('click', () => setTimeout(syncNavLabel, 0));
+    $$('.site-nav a').forEach(a => a.addEventListener('click', () => setTimeout(syncNavLabel, 0)));
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !navMenu.classList.contains('open')) return;
+      /* 详情弹窗打开时优先让弹窗处理 Escape，避免两个浮层同时关闭 */
+      if (typeof modal !== 'undefined' && modal && !modal.hidden) return;
+      closeNav();
+      navBtn.focus();
+    });
+    document.addEventListener('click', e => {
+      if (!navMenu.classList.contains('open')) return;
+      if (navMenu.contains(e.target) || navBtn.contains(e.target)) return;
+      closeNav();
+    }, true);
+    syncNavLabel();
+  }
+
+  /* (D) 3 个搜索框的 aria-label（搜索茶叶 / 搜索速查表 / 搜索术语）与可见
+         placeholder 文本不一致，语音控制用户念出屏幕上的「搜茶名、产地或香气」
+         无法命中控件（WCAG 2.5.3 Label in Name）。让可访问名称包含可见文本。 */
+  $$('input[type="search"]').forEach(el => {
+    const ph = el.getAttribute('placeholder');
+    if (ph && el.getAttribute('aria-label') !== ph) el.setAttribute('aria-label', ph);
+  });
 
   /* =========================================================
      Glossary
@@ -990,7 +1321,7 @@
       if (!target) return;
       e.preventDefault();
       const top = target.getBoundingClientRect().top + window.scrollY - 64;
-      window.scrollTo({ top, behavior: 'smooth' });
+      window.scrollTo({ top, behavior: SCROLL_BEHAVIOR });
     });
   });
 

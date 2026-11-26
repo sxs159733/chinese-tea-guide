@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sxs159733.github.io/chinese-tea-guide/sitemap.xml
